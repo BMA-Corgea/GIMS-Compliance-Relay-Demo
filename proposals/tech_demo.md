@@ -259,45 +259,46 @@ invariant both need real verification.
 - [x] Create sibling folder with fresh `git init` (clean history) and `main` branch
 - [x] Set `origin` → `github.com/BMA-Corgea/GIMS-Compliance-Relay-Demo`
 - [x] Copy `assets/gnome.png`, add `.gitignore` + placeholder `README.md`
-- [ ] Add a `LICENSE` (view/learn, no production/commercial use)
+- [x] Add a `LICENSE` (view/learn, no production/commercial use)
 
 ### Phase 1 — Port the UI shell
-- [ ] Copy `index.html`, `app.js`, `styles.css`, `icons.svg`, `favicon.svg` from
+- [x] Copy `index.html`, `app.js`, `styles.css`, `icons.svg`, `favicon.svg` from
       `gims_relay/web/`
-- [ ] Rewrite `/static/...` references to relative paths
-- [ ] Add a persistent "DEMO — simulated data, resets on reload" banner
-- [ ] Confirm the static page renders with `api()` temporarily stubbed to `{}`
+- [x] Rewrite `/static/...` references to relative paths
+- [x] Add a persistent "DEMO — simulated data, resets on reload" banner
+- [x] Confirm the static page renders (verified in a headless browser; see Phase 3 note)
 
 ### Phase 2 — Mock backend
-- [ ] `mock/fixtures.js` — seeded events (varied kinds), fake users, canned filenames
-- [ ] `mock/fake-crypto.js` — cosmetic random-hex checksum generator (demo-tagged)
-- [ ] `mock/mock-api.js` — router covering every endpoint in the Design table
-- [ ] Re-point `api()` in `app.js` to the mock router
-- [ ] Simulated capture timer for watched folders
-- [ ] Watermark exports
+- [x] `mock/fixtures.js` — seeded events (varied kinds), fake users, canned filenames
+- [x] `mock/fake-crypto.js` — cosmetic random-hex checksum generator (demo-tagged)
+- [x] `mock/mock-api.js` — router covering every endpoint in the Design table
+- [x] Re-point `api()` in `app.js` to the mock router (single seam: `fetch` → `MockAPI.fetch`)
+- [x] Simulated capture timer for watched folders
+- [x] Watermark exports
 
 ### Phase 3 — Neutering audit
-- [ ] Diff against the endpoint list; confirm no real auth/crypto/persistence path
-- [ ] Confirm none of `gims_relay/core|adapters|app`, secrets, or `boto3` are present
-- [ ] Loud demo labeling on checksums + exports verified
+- [x] Diff against the endpoint list; confirm no real auth/crypto/persistence path
+- [x] Confirm none of `gims_relay/core|adapters|app`, secrets, or `boto3` are present
+- [x] Loud demo labeling on checksums + exports verified
+- [x] Adversarial multi-agent review of the neutering invariant + contract fidelity
 
 ### Phase 4 — Gnome tutorial
-- [ ] `tutorial/tutorial.css` — overlay, spotlight (box-shadow), speech bubble, faded
-      controls
-- [ ] `tutorial/tutorial.js` — spotlight engine + `STEPS` array + resize re-measure
-- [ ] Wire the 8-step workflow; Skip / Next / Replay; `tutorial_done` persistence
-- [ ] Mobile/narrow-viewport alignment pass
+- [x] `tutorial/tutorial.css` — overlay, spotlight (four-panel frame), speech bubble
+- [x] `tutorial/tutorial.js` — spotlight engine + resize re-measure (+ `steps.js` content)
+- [x] Wire the workflow (10 steps); Skip / Next / Back / Replay; `tutorial_done` persistence
+- [x] Narrow-viewport handling (engine clamps + re-measures; CSS responsive)
+- [x] **Also turned the engine into a reusable `guided-tour` skill** (per owner request)
 
 ### Phase 5 — Deploy + CI
-- [ ] `vercel.json` if needed (recommend none; relative paths)
-- [ ] Connect the GitHub repo to Vercel; verify auto-deploy on push to `main`
-- [ ] GitHub Action: neutering-invariant grep guard (fails on forbidden content)
-- [ ] Optional Playwright happy-path in CI
+- [x] `vercel.json` (minimal: static, clean URLs, safe headers — relative paths need no rewrites)
+- [ ] Connect the GitHub repo to Vercel; verify auto-deploy on push to `main` *(owner action)*
+- [x] GitHub Action: neutering-invariant grep guard (fails on forbidden content) + zero-server-surface assert
+- [x] Optional Playwright happy-path (`tests/smoke.spec.js`; local, not wired into CI by default)
 
 ### Phase 6 — Polish & docs
-- [ ] Finalize public README (claims only, no how-it-works)
-- [ ] Screenshot/GIF of the tutorial for the repo
-- [ ] First push to `origin/main` (confirm with owner before pushing — outward-facing)
+- [x] Finalize public README (claims only, no how-it-works)
+- [ ] Screenshot/GIF of the tutorial for the repo *(captured during verification; not yet committed)*
+- [ ] First push to `origin/main` (confirm with owner before pushing — outward-facing) *(awaiting owner OK)*
 
 ---
 
@@ -323,8 +324,14 @@ invariant both need real verification.
   product. That is the realistic, achievable bar.
 - **Pushing is outward-facing** — confirm with the owner before the first
   `git push -u origin main`.
-- **Next immediate task if interrupted:** Phase 1 (port the five web files + fix
-  paths + add the demo banner).
+- **Next immediate task if interrupted:** the build is complete and verified.
+  Remaining are owner-gated outward-facing steps: (1) get owner OK, then
+  `git push -u origin main`; (2) connect the GitHub repo to Vercel for auto-deploy;
+  (3) optionally commit a tutorial screenshot/GIF into the repo.
+- **The gnome tour is now a reusable skill:** `~/.claude/skills/guided-tour/`
+  (engine `reference/tour.js` + `reference/tour.css`). The demo's `tutorial/tutorial.js`
+  and `tutorial.css` are copies of that engine; `tutorial/steps.js` holds the demo's
+  step content. Keep them in sync if the engine changes.
 
 ---
 
@@ -333,3 +340,4 @@ invariant both need real verification.
 | Date | Notes |
 |---|---|
 | 2026-06-24 | Proposal written. Repo scaffolded (Phase 0 mostly done): fresh git init, remote set, gnome asset + `.gitignore` + README in place. Architecture chosen: static SPA + in-browser mock, subtractive neutering, gnome spotlight tutorial. Nothing pushed yet. |
+| 2026-06-24 | **Implemented Phases 0–6** (all but owner-gated Vercel connect + first push). Ported the 5 web files (only logic change: `api()` `fetch`→`MockAPI.fetch`); built `mock/{fake-crypto,fixtures,mock-api}.js`; added `demo.css` DEMO banner; built the gnome tour (`tutorial/{tutorial.js,tutorial.css,steps.js}`, 10 steps); `LICENSE`, `vercel.json`, neutering-guard CI, `tests/smoke.spec.js`. Verified in a headless browser: 16/16 checks (login/seed/verify/watch/sign/export/reset) green, no console errors. Ran an adversarial multi-agent audit of the neutering invariant + contract fidelity. **Also extracted the tour engine into a reusable global skill `guided-tour`** (`~/.claude/skills/guided-tour/`). Still not pushed. |

@@ -1,0 +1,37 @@
+GIMS Compliance Relay — Interactive Demo
+Source-Available, Non-Production License
+Copyright (c) 2026 BMA / GIMS. All rights reserved.
+
+This repository contains a NON-FUNCTIONAL DEMONSTRATION of the GIMS Compliance
+Relay user interface. It has no real backend, no real authentication, no real
+cryptographic integrity, and no data persistence. It exists solely to show the
+look, feel, and workflow of the product.
+
+1. GRANT. You are granted a worldwide, royalty-free, non-exclusive license to
+   view, run locally, study, and reference the source code in this repository
+   for the purposes of evaluation, education, and demonstration.
+
+2. RESTRICTIONS. You may NOT, without the prior written permission of the
+   copyright holder:
+   (a) use this software, in whole or in part, in any production, clinical,
+       regulated, or otherwise operational environment;
+   (b) use this software for any commercial purpose, including offering it (or a
+       derivative) as a product or service;
+   (c) represent this software, any deployment of it, or any output it produces
+       (including exported files) as a functional, validated, or compliant
+       record-keeping or 21 CFR Part 11 system; or
+   (d) remove or obscure the "DEMO" notices, banners, or export watermarks.
+
+3. NO COMPLIANCE FUNCTION. This software is a cosmetic stand-in. It does not and
+   cannot provide audit-trail integrity, electronic-signature, custody, or any
+   other regulatory function. Do not rely on it for anything.
+
+4. NO WARRANTY. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO
+   EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES,
+   OR OTHER LIABILITY ARISING FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR
+   THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+For licensing of the real GIMS Compliance Relay product, contact the copyright
+holder.

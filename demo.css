@@ -1,0 +1,44 @@
+/* ════════════════════════════════════════════════════════════════════════
+   demo.css — demo-only cosmetic additions, layered on top of the cloned
+   styles.css (which is kept byte-identical to the product for easy re-sync).
+   Everything here is additive: the persistent DEMO banner, the layout offset
+   it needs, and a hook so the tour can reveal hover-only affordances.
+   ════════════════════════════════════════════════════════════════════════ */
+
+:root { --demo-banner-h: 30px; }
+
+/* push the page down and dock the sticky product header just below the banner */
+body { padding-top: var(--demo-banner-h); }
+.header { top: var(--demo-banner-h); }
+/* the login view is a single screen: subtract the banner too so it doesn't overflow */
+.login-screen { min-height: calc(100vh - 60px - var(--demo-banner-h)); }
+
+/* ── Persistent DEMO banner ──────────────────────────────────────────────── */
+.demo-banner {
+  position: fixed; top: 0; left: 0; right: 0; height: var(--demo-banner-h); z-index: 60;
+  display: flex; align-items: center; gap: 9px; padding: 0 16px;
+  font-size: 12px; font-weight: 600; color: #1a1205;
+  background: repeating-linear-gradient(135deg, #fbbf24 0 22px, #f5b30f 22px 44px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.25);
+  box-shadow: 0 1px 10px rgba(0, 0, 0, 0.35);
+}
+.demo-banner b { font-weight: 800; letter-spacing: 0.4px; }
+.demo-banner-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.demo-banner-grow { flex: 1; }
+.demo-dot { width: 9px; height: 9px; border-radius: 50%; background: #1a1205; flex: 0 0 auto; animation: demo-blink 1.8s ease infinite; }
+@keyframes demo-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+.demo-replay {
+  font-family: inherit; font-size: 11.5px; font-weight: 700; cursor: pointer;
+  color: #1a1205; background: rgba(0, 0, 0, 0.10); border: 1px solid rgba(0, 0, 0, 0.30);
+  padding: 4px 11px; border-radius: 99px; white-space: nowrap;
+  transition: background 0.15s, transform 0.12s;
+}
+.demo-replay:hover { background: rgba(0, 0, 0, 0.20); transform: translateY(-1px); }
+
+/* ── Tour hook: reveal the hover-only row sign button while the tour runs ─── */
+body.tour-on .row-sign { opacity: 1 !important; }
+
+@media (max-width: 560px) {
+  .demo-banner-text { font-size: 11px; }
+}

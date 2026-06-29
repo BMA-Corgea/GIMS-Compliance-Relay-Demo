@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GIMS Compliance Relay — Demo</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="demo.css" />
+  <link rel="stylesheet" href="tutorial/tutorial.css" />
+</head>
+<body>
+  <!-- ── Persistent DEMO banner (loud, honest framing) ──────────────────── -->
+  <div class="demo-banner" id="demoBanner">
+    <span class="demo-dot"></span>
+    <span class="demo-banner-text"><b>DEMO</b> — simulated data, no backend, resets on reload. Not for regulated use.</span>
+    <span class="demo-banner-grow"></span>
+    <button type="button" id="replayTour" class="demo-replay" title="Replay the gnome tutorial">↻ Replay tour</button>
+  </div>
+
+  <!-- ── Header ─────────────────────────────────────────────────── -->
+  <header class="header">
+    <div class="brand">
+      <div class="brand-mark"><svg class="icon"><use href="icons.svg#i-shield"/></svg></div>
+      <div>
+        <div class="brand-title">GIMS Compliance Relay</div>
+        <div class="brand-sub">Immutable audit trail · demo</div>
+      </div>
+    </div>
+    <div class="header-spacer"></div>
+
+    <div id="chainPill" class="chain-pill hidden" title="Re-verify the chain">
+      <span class="dot"></span><span id="chainPillText">Verifying…</span>
+    </div>
+
+    <div id="operatorBox" class="operator hidden">
+      <div class="avatar"><svg class="icon"><use href="icons.svg#i-user"/></svg></div>
+      <div>
+        <div class="who" id="opName">—</div>
+        <div class="role" id="opRole">reviewer</div>
+      </div>
+      <button id="logoutBtn" class="btn sm ghost" title="Sign out" style="padding:5px 7px;">
+        <svg class="icon"><use href="icons.svg#i-logout"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ── Login screen ───────────────────────────────────────────── -->
+  <section id="loginScreen" class="login-screen">
+    <div class="panel login-card">
+      <div class="panel-body" style="padding:26px 24px;">
+        <div class="login-hero">
+          <div class="brand-mark"><svg class="icon"><use href="icons.svg#i-shield"/></svg></div>
+          <h1>Sign in to review</h1>
+          <p>Viewing and exporting the regulated trail requires an authenticated reviewer.
+             File capture runs automatically under the operator's OS identity.</p>
+        </div>
+        <div class="field">
+          <label class="field-label">Email</label>
+          <input id="loginEmail" class="input" type="email" placeholder="you@lab.com" autocomplete="username" />
+        </div>
+        <div class="field">
+          <label class="field-label">Password</label>
+          <input id="loginPassword" class="input" type="password" placeholder="••••••••" autocomplete="current-password" />
+        </div>
+        <div id="loginErr" class="form-err"></div>
+        <button id="loginBtn" class="btn-primary">Sign in</button>
+        <div style="text-align:center; font-size:12.5px; color:var(--text-soft);">
+          First run? <span id="registerLink" class="link">Create the first account</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Dashboard ──────────────────────────────────────────────── -->
+  <main id="dashboard" class="layout hidden">
+    <!-- left controls -->
+    <div class="col">
+      <div class="panel">
+        <div class="panel-head">
+          <svg class="icon"><use href="icons.svg#i-database"/></svg>
+          <span class="panel-title">Trail</span>
+        </div>
+        <div class="panel-body">
+          <div class="field">
+            <label class="field-label">Trail / study</label>
+            <input id="trailInput" class="input" list="trailList" value="default" />
+            <datalist id="trailList"></datalist>
+          </div>
+          <div class="stats">
+            <div class="stat accent"><span class="v" id="statTotal">—</span><span class="l">Records</span></div>
+            <div class="stat green"><span class="v" id="statVerified">—</span><span class="l">Chain head</span></div>
+          </div>
+          <div class="field-row">
+            <button class="btn green" id="verifyBtn"><svg class="icon"><use href="icons.svg#i-shield"/></svg> Verify</button>
+            <button class="btn" id="refreshBtn"><svg class="icon"><use href="icons.svg#i-refresh"/></svg> Refresh</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <svg class="icon"><use href="icons.svg#i-folder"/></svg>
+          <span class="panel-title">File watcher</span>
+          <span class="spacer"></span>
+          <span id="watcherSys" class="chip">—</span>
+        </div>
+        <div class="panel-body">
+          <div class="field">
+            <label class="field-label">Watch a folder</label>
+            <div class="field-row">
+              <input id="folderInput" class="input" placeholder="/path/to/instrument/exports" />
+              <button class="btn" id="addFolderBtn" style="flex:0 0 auto;"><svg class="icon"><use href="icons.svg#i-plus"/></svg></button>
+            </div>
+          </div>
+          <div id="watcherList" style="display:flex; flex-direction:column; gap:10px;"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <svg class="icon"><use href="icons.svg#i-download"/></svg>
+          <span class="panel-title">Export evidence</span>
+        </div>
+        <div class="panel-body">
+          <p style="font-size:12px; color:var(--text-soft); line-height:1.5;">
+            Sealed export — the package binds the exact rows + chain report and is HMAC-signed for offline re-verification.
+            <em style="color:var(--amber);">(Demo: exports are watermarked and unsigned.)</em>
+          </p>
+          <div class="field-row">
+            <button class="btn" id="exportCsvBtn"><svg class="icon"><use href="icons.svg#i-download"/></svg> CSV</button>
+            <button class="btn" id="exportJsonBtn"><svg class="icon"><use href="icons.svg#i-download"/></svg> JSON</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- main: trail viewer -->
+    <div class="col">
+      <div class="panel" style="min-height: 70vh;">
+        <div class="panel-head">
+          <svg class="icon"><use href="icons.svg#i-activity"/></svg>
+          <span class="panel-title">Compliance trail</span>
+          <span class="spacer"></span>
+          <div class="toolbar" style="gap:8px;">
+            <div class="search-wrap" style="min-width:180px;">
+              <svg class="icon"><use href="icons.svg#i-search"/></svg>
+              <input id="searchInput" class="input" placeholder="Search payload, path, actor…" />
+            </div>
+            <select id="kindFilter" class="select" style="width:auto;">
+              <option value="">All kinds</option>
+              <option value="file_capture">File capture</option>
+              <option value="signature">Signature</option>
+              <option value="access">Access</option>
+              <option value="export">Export</option>
+              <option value="watcher_control">Watcher</option>
+              <option value="system">System</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="trail">
+            <thead>
+              <tr>
+                <th>#</th><th>Time (UTC)</th><th>Kind</th><th>Operator</th>
+                <th>What</th><th>Checksum</th><th></th>
+              </tr>
+            </thead>
+            <tbody id="trailBody"></tbody>
+          </table>
+          <div id="trailEmpty" class="empty hidden">
+            <svg class="icon"><use href="icons.svg#i-database"/></svg>
+            <h3>No records yet</h3>
+            <p>Capture a file or adjust your filters.</p>
+          </div>
+        </div>
+        <div class="pager">
+          <button class="btn sm" id="prevBtn">Prev</button>
+          <button class="btn sm" id="nextBtn">Next</button>
+          <span class="info" id="pagerInfo">—</span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ── E-signature modal ──────────────────────────────────────── -->
+  <div id="signOverlay" class="overlay hidden">
+    <div class="modal">
+      <div class="modal-head">
+        <div class="modal-title"><svg class="icon"><use href="icons.svg#i-pen"/></svg> Electronic signature</div>
+        <div class="modal-sub">21 CFR Part 11 §11.200 requires re-authentication at signing. Enter your password to bind a signature to the selected record.</div>
+      </div>
+      <div class="modal-body">
+        <div class="field"><label class="field-label">Record checksum</label><input id="signTarget" class="input mono" readonly /></div>
+        <div class="field-row">
+          <div class="field"><label class="field-label">Email</label><input id="signEmail" class="input" type="email" /></div>
+          <div class="field"><label class="field-label">Password</label><input id="signPassword" class="input" type="password" /></div>
+        </div>
+        <div class="field">
+          <label class="field-label">Meaning</label>
+          <select id="signMeaning" class="select">
+            <option value="approved">Approved</option>
+            <option value="reviewed">Reviewed</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </div>
+        <div class="field"><label class="field-label">Reason</label><textarea id="signReason" class="input" placeholder="Reason for this signature…"></textarea></div>
+        <div id="signErr" class="form-err"></div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn ghost" id="signCancel">Cancel</button>
+        <button class="btn-primary" style="width:auto; padding:10px 18px;" id="signConfirm">Sign &amp; confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toasts" id="toasts"></div>
+
+  <!-- ── In-browser mock "backend" (no server, no network) ──────────────── -->
+  <script src="mock/fake-crypto.js"></script>
+  <script src="mock/fixtures.js"></script>
+  <script src="mock/mock-api.js"></script>
+  <!-- ── Cloned UI logic (only change vs. the product: api() → MockAPI.fetch) ── -->
+  <script src="app.js"></script>
+  <!-- ── Gnome guided tour (engine + this demo's steps) ─────────────────── -->
+  <script src="tutorial/tutorial.js"></script>
+  <script src="tutorial/steps.js"></script>
+</body>
+</html>

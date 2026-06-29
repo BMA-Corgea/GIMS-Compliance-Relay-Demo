@@ -1,0 +1,91 @@
+name: Neutering invariant guard
+
+# Fails the build if the "brain" of the real product ever leaks into this
+# client-only demo. The whole security posture is SUBTRACTIVE: the valuable code
+# (keyed integrity chaining, server-of-record custody, real e-signatures,
+# notarization) must remain ABSENT, not merely disabled behind a flag. This job
+# is the automated tripwire that keeps future edits honest.
+#
+# Because this is a BROWSER-ONLY static app, the natural way to re-introduce the
+# brain is client-side JS (WebCrypto + IndexedDB), so the denylist covers those
+# idioms too — and we back the denylist with POSITIVE invariants (the cosmetic
+# pieces must still be cosmetic) and a self-integrity check (the guard itself
+# can't be silently hollowed out), because a denylist on readable client code is
+# inherently leaky.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Scan for forbidden "real implementation" content
+        run: |
+          set -uo pipefail
+          # Tokens that should NEVER appear in this static, client-only demo. Prose docs are
+          # allowed to DESCRIBE the product, so README / proposals / LICENSE / this workflow
+          # are excluded; we scan only shippable source. Covers BOTH server idioms (Python/
+          # Node) AND browser idioms (WebCrypto / IndexedDB) — the latter is how the brain
+          # would actually be re-added here.
+          PATTERN='createHmac|crypto\.subtle|subtle\.(sign|verify|digest|encrypt|decrypt)|importKey|deriveKey|deriveBits|generateKey|timingSafeEqual|compare_digest|hmac\.new|hashlib|pbkdf2|argon2|bcrypt|scrypt|boto3|psycopg|sqlalchemy|fastapi|uvicorn|starlette|indexedDB|openDatabase|gims_relay|secret_provider|record_store|object_store|compute_checksum|GENESIS_PREV_CHECKSUM|secret_access_key|aws_secret_access|BEGIN [A-Z ]*PRIVATE KEY'
+
+          if grep -rInE "$PATTERN" \
+              --exclude-dir=.git \
+              --exclude-dir=node_modules \
+              --exclude-dir=proposals \
+              --exclude-dir=.github \
+              --exclude=README.md \
+              --exclude=LICENSE \
+              . ; then
+            echo ""
+            echo "::error::Forbidden content found. This demo must remain subtractively neutered:"
+            echo "::error::no real crypto/auth/persistence (server OR browser) and no private-repo artifacts."
+            exit 1
+          fi
+          echo "OK — no forbidden 'brain' content found. The demo is still just a cosmetic shell."
+
+      - name: Positive invariants — the cosmetic shell must stay cosmetic
+        run: |
+          set -uo pipefail
+          # A denylist can be trimmed; these positive assertions independently confirm the
+          # neutering is still in place. (A leak usually REMOVES one of these, not just adds a token.)
+          fail=0
+          grep -q 'return "demo"' mock/fake-crypto.js \
+            || { echo "::error::fake-crypto.js no longer returns a demo-tagged checksum"; fail=1; }
+          grep -Eq 'ok:[[:space:]]*true' mock/mock-api.js \
+            || { echo "::error::/events/verify is no longer a constant ok:true (real chain walk?)"; fail=1; }
+          if grep -rInE 'crypto\.subtle|indexedDB|openDatabase|importKey|deriveKey|subtle\.(sign|digest)' \
+              app.js mock tutorial 2>/dev/null; then
+            echo "::error::real client-side crypto / durable custody store found in shippable source"; fail=1; fi
+          [ "$fail" -eq 0 ] && echo "OK — cosmetic invariants hold (demo checksums, constant verify, no real crypto/store)." || exit 1
+
+      - name: Assert there is no server surface
+        run: |
+          set -uo pipefail
+          # A serverless/function dir or a Python backend would mean the demo grew a server.
+          # Keep the deploy surface at literally zero.
+          BAD=0
+          for d in api functions gims_relay backend server; do
+            if [ -d "$d" ]; then echo "::error::Unexpected server directory present: $d/"; BAD=1; fi
+          done
+          if ls ./*.py >/dev/null 2>&1; then echo "::error::Python source present at repo root — the demo must be static-only."; BAD=1; fi
+          [ "$BAD" -eq 0 ] && echo "OK — zero server surface (static files only)." || exit 1
+
+      - name: Self-integrity — the guard PATTERN wasn't hollowed out
+        run: |
+          set -uo pipefail
+          # The content scan excludes .github (the PATTERN legitimately contains the forbidden
+          # tokens as literals), so weakening the guard would otherwise be invisible to it.
+          GUARD=.github/workflows/neutering-guard.yml
+          miss=0
+          # plain substrings (no regex metachars) that must remain in the PATTERN
+          for tok in 'createHmac' 'subtle' 'indexedDB' 'gims_relay'; do
+            grep -qF "$tok" "$GUARD" || { echo "::error::guard PATTERN missing core token: $tok"; miss=1; }
+          done
+          [ "$miss" -eq 0 ] && echo "OK — the guard still defines its core forbidden tokens." || exit 1
