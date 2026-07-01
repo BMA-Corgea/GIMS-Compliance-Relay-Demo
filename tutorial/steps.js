@@ -27,7 +27,9 @@
     {
       target: "#loginBtn", placement: "top", title: "Sign in",
       html: "Viewing the regulated trail needs an authenticated reviewer. In this demo " +
-            "<b>any</b> email & password work — I've filled them in. Click <b>Sign in</b>.",
+            "<b>any</b> email & password work — I've filled them in. Click <b>Sign in</b>." +
+            "<br><br><i>Already signed in?</i> Click the <b>logout</b> button (top-right), " +
+            "then press <b>Back</b> and <b>Next</b> to pick up here.",
       advanceOn: "target-click", advanceDelay: 500,
       beforeShow: function (api) { api.set("#loginEmail", DEMO_EMAIL); api.set("#loginPassword", DEMO_PASS); },
     },
