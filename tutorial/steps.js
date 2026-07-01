@@ -103,8 +103,25 @@
     });
   }
 
+  function launchReplay() {
+    try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+    Tour.replay({ storageKey: STORAGE_KEY, finishLabel: "Finish", narrator: { image: "assets/gnome.png", name: "GIMS gnome" }, steps: STEPS });
+  }
+
   window.GimsTour = {
-    replay: function () { try { localStorage.removeItem(STORAGE_KEY); } catch (e) {} Tour.replay({ storageKey: STORAGE_KEY, finishLabel: "Finish", narrator: { image: "assets/gnome.png", name: "GIMS gnome" }, steps: STEPS }); },
+    replay: function () {
+      // The tour begins on the login screen, so a replay must first return the
+      // app to a logged-out state — otherwise the login-step spotlight has no
+      // target and the tour glitches. Sign out, then start once the login
+      // screen has painted.
+      var demo = window.GimsDemo;
+      if (demo && demo.isLoggedIn && demo.isLoggedIn()) {
+        try { demo.logout(); } catch (e) {}
+        setTimeout(launchReplay, 150);
+      } else {
+        launchReplay();
+      }
+    },
   };
 
   function boot() {

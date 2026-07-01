@@ -280,5 +280,12 @@
   // auto-refresh the trail + watcher periodically while viewing
   setInterval(() => { if (!$("dashboard").classList.contains("hidden")) { loadWatcher(); } }, 8000);
 
+  // Expose a tiny surface so the guided tour can reset the app to a clean,
+  // logged-out state before replaying (the tour starts on the login screen).
+  window.GimsDemo = {
+    isLoggedIn: () => !$("dashboard").classList.contains("hidden"),
+    logout: doLogout,
+  };
+
   restore();
 })();
